@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Academic Dashboard</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7f0ff;
+      color: #4a2a7a;
+    }
+    header {
+      padding: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .greeting h1 {
+      font-size: 44px;
+      color: #ff5fa2;
+      margin: 0;
+      cursor: pointer;
+    }
+    .greeting p {
+      margin-top: 6px;
+      color: #c96db5;
+      cursor: pointer;
+    }
+    .avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      border: 5px solid #ff5fa2;
+      object-fit: cover;
+      cursor: pointer;
+    }
+    .tabs {
+      display: flex;
+      gap: 15px;
+      padding: 0 30px;
+    }
+    .tab {
+      padding: 10px 25px;
+      border-radius: 20px;
+      background: #ffc1dc;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .tab.active {
+      background: #caa7ff;
+      color: white;
+    }
+    section {
+      background: #eadcff;
+      margin: 25px 30px;
+      padding: 25px;
+      border-radius: 20px;
+    }
+    .section-title {
+      background: #caa7ff;
+      color: white;
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: #e6d4ff;
+      border-radius: 15px;
+      padding: 18px;
+      position: relative;
+      cursor: pointer;
+    }
+    .card.done {
+      background: #5a1bb5;
+      color: white;
+    }
+    .progress {
+      height: 6px;
+      background: #d0b9ff;
+      border-radius: 5px;
+      margin-top: 12px;
+      overflow: hidden;
+    }
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: #5a1bb5;
+      transition: 0.3s;
+    }
+    .card.done .progress span { width: 100%; }
+    .todo {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+    .todo input {
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+    }
+    .todo button {
+      padding: 12px 25px;
+      border-radius: 12px;
+      border: none;
+      background: #c2185b;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .todo button:disabled {
+      background: #ff9cc9;
+      cursor: not-allowed;
+    }
+    .startup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #ff5fa2, #caa7ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .startup.hidden {
+      display: none;
+    }
+    .startup-content {
+      background: white;
+      padding: 50px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .startup-content h1 {
+      color: #ff5fa2;
+      margin-bottom: 30px;
+      font-size: 36px;
+    }
+    .startup-content input {
+      width: 100%;
+      padding: 15px;
+      margin: 15px 0;
+      border: 2px solid #caa7ff;
+      border-radius: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .startup-content input:focus {
+      outline: none;
+      border-color: #ff5fa2;
+      box-shadow: 0 0 10px rgba(255, 95, 162, 0.3);
+    }
+    .startup-content button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #ff5fa2, #caa7ff);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .startup-content button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(255, 95, 162, 0.4);
+    }
+    .startup-photo-input {
+      margin: 20px 0;
+    }
+    .startup-photo-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 15px auto;
+      border: 3px solid #caa7ff;
+      object-fit: cover;
+    }
+    .startup-photo-input input {
+      display: none;
+    }
+    .startup-photo-label {
+      display: inline-block;
+      background: #caa7ff;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .startup-photo-label:hover {
+      background: #b89bff;
+    }
+    .card-delete {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .card:hover .card-delete {
+      opacity: 1;
+    }
+    .card-delete:hover {
+      background: #ff5252;
+    }
+    .editable-hint {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+    header .greeting h1::after,
+    header .greeting p::after {
+      content: ' ✏️';
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    header .greeting h1:hover::after,
+    header .greeting p:hover::after {
+      opacity: 1;
+    }
+    .avatar::after {
+      content: '📷';
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      font-size: 20px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .avatar:hover::after {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+<div class="startup" id="startupScreen">
+  <div class="startup-content">
+    <h1>Welcome! 👋</h1>
+    <p style="color: #666; margin-bottom: 25px;">Let's set up your profile</p>
+    
+    <input type="text" id="startupName" placeholder="Enter your name" />
+    <input type="text" id="startupQuote" placeholder="Enter your motto" />
+    
+    <div class="startup-photo-input">
+      <img id="startupPhotoPreview" src="" class="startup-photo-preview" />
+      <div>
+        <label class="startup-photo-label">
+          <input type="file" id="startupPhotoInput" accept="image/*" />
+          📸 Upload Photo
+        </label>
+      </div>
+    </div>
+    
+    <button onclick="startupComplete()">Get Started</button>
+  </div>
+</div>
+
+<header>
+  <div class="greeting">
+    <h1 id="userName"></h1>
+    <p id="quote"></p>
+  </div>
+  <img src="https://via.placeholder.com/150" class="avatar" id="avatar" />
+  <input type="file" id="avatarInput" accept="image/*" style="display:none" />
+</header>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('HOME')">HOME</div>
+  <div class="tab" onclick="switchTab('ACADS')">ACADS</div>
+  <div class="tab" onclick="switchTab('AGENDA')">AGENDA</div>
+  <div class="tab" onclick="switchTab('CHORES')">CHORES</div>
+</div>
+<section>
+  <div class="section-title" id="sectionTitle">HOME</div>
+  <div class="cards" id="cards"></div>
+  <div class="todo">
+    <input id="titleInput" placeholder="Task title" />
+    <input id="subjectInput" placeholder="Subject code" />
+    <input id="deadlineInput" type="date" />
+    <button id="addBtn" onclick="addCard()" disabled>Add</button>
+  </div>
+</section>
+<script>
+  let currentTab = 'HOME';
+  let data = { HOME: [], ACADS: [], AGENDA: [], CHORES: [] };
+  
+  // Load saved values from localStorage, but keep fresh task data
+  const savedName = localStorage.getItem('name');
+  const savedQuote = localStorage.getItem('quote');
+  const savedAvatar = localStorage.getItem('startupPhoto');
+
+  const nameEl = document.getElementById('userName');
+  const quoteEl = document.getElementById('quote');
+  const avatarEl = document.getElementById('avatar');
+  const avatarInput = document.getElementById('avatarInput');
+  const titleInput = document.getElementById('titleInput');
+  const subjectInput = document.getElementById('subjectInput');
+  const deadlineInput = document.getElementById('deadlineInput');
+  const addBtn = document.getElementById('addBtn');
+
+  // Load saved values
+  nameEl.textContent = savedName || 'Hello, Name!';
+  quoteEl.textContent = savedQuote || 'Believe you can, and you\'re halfway there.';
+  avatarEl.src = savedAvatar || 'https://via.placeholder.com/150';
+
+  // Editable name
+  nameEl.onclick = () => {
+    const n = prompt('Enter your name:', nameEl.textContent.replace('Hello, ', '').replace('!', ''));
+    if (n) { 
+      const formatted = 'Hello, ' + n + '!';
+      localStorage.setItem('name', formatted); 
+      nameEl.textContent = formatted; 
+    }
+  };
+
+  // Editable quote
+  quoteEl.onclick = () => {
+    const q = prompt('Enter your motivation quote:', quoteEl.textContent);
+    if (q) { 
+      localStorage.setItem('quote', q); 
+      quoteEl.textContent = q; 
+    }
+  };
+
+  // Avatar is clickable to change photo
+  avatarEl.onclick = () => {
+    avatarInput.click();
+  };
+
+  avatarInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      avatarEl.src = reader.result;
+      localStorage.setItem('startupPhoto', reader.result);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Enable Add button based on current tab
+  titleInput.addEventListener('input', () => {
+    addBtn.disabled = currentTab === 'ACADS' ? subjectInput.value.trim() === '' : titleInput.value.trim() === '';
+  });
+  subjectInput.addEventListener('input', () => {
+    addBtn.disabled = currentTab === 'ACADS' ? subjectInput.value.trim() === '' : titleInput.value.trim() === '';
+  });
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('sectionTitle').textContent = tab;
+    // Show/hide inputs and input container based on tab
+    const todoContainer = document.querySelector('.todo');
+    if (tab === 'HOME') {
+      todoContainer.style.display = 'none';
+    } else {
+      todoContainer.style.display = 'flex';
+      if (tab === 'ACADS') {
+        titleInput.style.display = 'block';
+        subjectInput.style.display = 'block';
+        deadlineInput.style.display = 'block';
+        addBtn.disabled = (titleInput.value.trim() === '' || subjectInput.value.trim() === '');
+      } else {
+        titleInput.style.display = 'block';
+        subjectInput.style.display = 'none';
+        deadlineInput.style.display = 'block';
+        addBtn.disabled = titleInput.value.trim() === '';
+      }
+    }
+    renderCards();
+  }
+
+  function save() { localStorage.setItem('dashboardData', JSON.stringify(data)); }
+
+  function renderCards() {
+    const container = document.getElementById('cards');
+    container.innerHTML = '';
+    
+    if (currentTab === 'HOME') {
+      // Display all incomplete tasks from all tabs
+      const allTasks = [];
+      ['ACADS', 'AGENDA', 'CHORES'].forEach(tab => {
+        data[tab].forEach((item, i) => {
+          if (!item.done) {
+            allTasks.push({ ...item, tabName: tab, index: i });
+          }
+        });
+      });
+      
+      if (allTasks.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #999;">No pending tasks! 🎉</div>';
+        return;
+      }
+      
+      allTasks.forEach((item) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.onclick = () => {
+          currentTab = item.tabName;
+          toggleDone(item.index);
+          switchTab('HOME');
+        };
+        
+        let content;
+        if (item.tabName === 'ACADS') {
+          const deadlineHTML = item.deadline ? `<div class="deadline">Deadline: ${item.deadline}</div>` : '';
+          content = `<button class="card-delete" onclick="event.stopPropagation(); deleteCard('${item.tabName}', ${item.index})">✕</button>
+            <div style="font-size: 11px; background: #caa7ff; color: white; display: inline-block; padding: 3px 8px; border-radius: 8px; margin-bottom: 8px;">${item.tabName}</div>
+            <h3>${item.title}</h3>
+            <div style="font-size: 12px; color: #888; margin: 5px 0;">${item.subject}</div>
+            <div class="progress"><span></span></div>
+            ${deadlineHTML}`;
+        } else {
+          const deadlineHTML = item.deadline ? `<div class="deadline">Deadline: ${item.deadline}</div>` : '';
+          content = `<button class="card-delete" onclick="event.stopPropagation(); deleteCard('${item.tabName}', ${item.index})">✕</button>
+            <div style="font-size: 11px; background: #caa7ff; color: white; display: inline-block; padding: 3px 8px; border-radius: 8px; margin-bottom: 8px;">${item.tabName}</div>
+            <h3>${item.title}</h3>
+            <div class="progress"><span></span></div>
+            ${deadlineHTML}`;
+        }
+        card.innerHTML = content;
+        container.appendChild(card);
+      });
+    } else {
+      // Display tasks for current tab
+      data[currentTab].forEach((item, i) => {
+        const card = document.createElement('div');
+        card.className = 'card' + (item.done ? ' done' : '');
+        card.onclick = () => toggleDone(i);
+
+        let content;
+        if (currentTab === 'ACADS') {
+          const deadlineHTML = item.deadline ? `<div class="deadline">Deadline: ${item.deadline}</div>` : '';
+          content = `<button class="card-delete" onclick="event.stopPropagation(); deleteCard('${currentTab}', ${i})">✕</button>
+            <h3>${item.title}</h3>
+            <div style="font-size: 12px; color: #888; margin: 5px 0;">${item.subject}</div>
+            <div class="progress"><span></span></div>
+            ${deadlineHTML}`;
+        } else {
+          const deadlineHTML = item.deadline ? `<div class="deadline">Deadline: ${item.deadline}</div>` : '';
+          content = `<button class="card-delete" onclick="event.stopPropagation(); deleteCard('${currentTab}', ${i})">✕</button>
+            <h3>${item.title}</h3>
+            <div class="progress"><span></span></div>
+            ${deadlineHTML}`;
+        }
+        card.innerHTML = content;
+        container.appendChild(card);
+      });
+    }
+  }
+
+  function addCard() {
+    if (currentTab === 'ACADS') {
+      const title = titleInput.value.trim();
+      const subject = subjectInput.value.trim();
+      if (!title || !subject) return;
+      data[currentTab].push({
+        title,
+        subject,
+        deadline: deadlineInput.value || '',
+        done: false
+      });
+      titleInput.value = subjectInput.value = deadlineInput.value = '';
+    } else {
+      const title = titleInput.value.trim();
+      if (!title) return;
+      data[currentTab].push({
+        title,
+        deadline: deadlineInput.value || '',
+        done: false
+      });
+      titleInput.value = deadlineInput.value = '';
+    }
+    addBtn.disabled = true;
+    save(); 
+    renderCards();
+  }
+
+  function toggleDone(i) {
+    data[currentTab][i].done = !data[currentTab][i].done;
+    save(); 
+    renderCards();
+  }
+
+  function deleteCard(tab, index) {
+    data[tab].splice(index, 1);
+    save();
+    renderCards();
+  }
+
+  function startupComplete() {
+    const name = document.getElementById('startupName').value.trim();
+    const quote = document.getElementById('startupQuote').value.trim();
+    const photoPreview = document.getElementById('startupPhotoPreview').src;
+    
+    if (name) {
+      const formatted = 'Hello, ' + name + '!';
+      localStorage.setItem('name', formatted);
+      nameEl.textContent = formatted;
+    }
+    
+    if (quote) {
+      localStorage.setItem('quote', quote);
+      quoteEl.textContent = quote;
+    }
+    
+    // Save the uploaded photo as the default
+    if (photoPreview && photoPreview !== 'https://via.placeholder.com/100') {
+      localStorage.setItem('startupPhoto', photoPreview);
+      avatarEl.src = photoPreview;
+    }
+    
+    // Mark that user has completed startup
+    localStorage.setItem('hasVisited', 'true');
+    document.getElementById('startupScreen').classList.add('hidden');
+    renderCards();
+  }
+
+  // Check if this is first time (show startup) or returning user
+  function initializeApp() {
+    const hasVisited = localStorage.getItem('hasVisited');
+    if (!hasVisited) {
+      // First time visitor - show startup
+      document.getElementById('startupScreen').classList.remove('hidden');
+      document.getElementById('startupPhotoPreview').src = 'https://via.placeholder.com/100';
+    } else {
+      // Returning user - hide startup
+      document.getElementById('startupScreen').classList.add('hidden');
+    }
+  }
+
+  // Handle startup photo upload (preview only, not saved)
+  document.getElementById('startupPhotoInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.getElementById('startupPhotoPreview').src = reader.result;
+      localStorage.setItem('startupPhoto', reader.result);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Allow Enter key to submit startup form
+  document.getElementById('startupName').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') startupComplete();
+  });
+  document.getElementById('startupQuote').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') startupComplete();
+  });
+
+  // Initialize app on load
+  initializeApp();
+  renderCards();
+</script>
+</body>
+</html>
